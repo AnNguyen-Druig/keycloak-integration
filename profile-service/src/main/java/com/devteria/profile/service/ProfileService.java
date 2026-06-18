@@ -1,5 +1,11 @@
 package com.devteria.profile.service;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
 import com.devteria.profile.dto.identity.Credential;
 import com.devteria.profile.dto.identity.TokenExchangeParam;
 import com.devteria.profile.dto.identity.UserCreationParam;
@@ -8,16 +14,12 @@ import com.devteria.profile.dto.response.ProfileResponse;
 import com.devteria.profile.mapper.ProfileMapper;
 import com.devteria.profile.repository.IdentityClient;
 import com.devteria.profile.repository.ProfileRepository;
+
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @Slf4j
@@ -36,19 +38,19 @@ public class ProfileService {
     @NonFinal
     String clientSecret;
 
-    public List<ProfileResponse> getAllProfiles(){
+    public List<ProfileResponse> getAllProfiles() {
         var profiles = profileRepository.findAll();
         return profiles.stream().map(profileMapper::toProfileResponse).toList();
     }
 
-    public ProfileResponse register(RegistrationRequest request){
+    public ProfileResponse register(RegistrationRequest request) {
         // Create account in KeyCloak
         // Exchange client Token
         var token = identityClient.exchangeToken(TokenExchangeParam.builder()
-                        .grant_type("client_credentials")
-                        .client_id(clientId)
-                        .client_secret(clientSecret)
-                        .scope("openid")
+                .grant_type("client_credentials")
+                .client_id(clientId)
+                .client_secret(clientSecret)
+                .scope("openid")
                 .build());
 
         log.info("TokenInfo {}", token);
@@ -65,11 +67,11 @@ public class ProfileService {
                         .enabled(true)
                         .emailVerified(false)
                         .credentials(List.of(Credential.builder()
-                                        .type("password")
-                                        .temporary(false)
-                                        .value(request.getPassword())
+                                .type("password")
+                                .temporary(false)
+                                .value(request.getPassword())
                                 .build()))
-                .build());
+                        .build());
 
         String userId = extractUserId(creationResponse);
         log.info("UserId {}", userId);
@@ -82,7 +84,7 @@ public class ProfileService {
         return profileMapper.toProfileResponse(profile);
     }
 
-    private String extractUserId(ResponseEntity<?> response){
+    private String extractUserId(ResponseEntity<?> response) {
         String location = response.getHeaders().get("Location").getFirst();
         String[] splitedStr = location.split("/");
         return splitedStr[splitedStr.length - 1];
