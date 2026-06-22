@@ -5,5 +5,10 @@ import org.springframework.stereotype.Repository;
 
 import com.devteria.profile.entity.Profile;
 
+import java.util.Optional;
+
 @Repository
-public interface ProfileRepository extends MongoRepository<Profile, String> {}
+public interface ProfileRepository extends MongoRepository<Profile, String> {
+
+    Optional<Profile> findByUserId(String userId);
+}
